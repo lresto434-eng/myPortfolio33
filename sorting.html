@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sorting Sounds — Angel Resto</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap');
+    * { margin:0; padding:0; box-sizing:border-box; }
+    :root {
+      --gold:#c9a84c; --gold-l:#e8c96a; --gold-d:#7a5f25;
+      --bg:#060810; --bgm:#0c1020; --bgc:#111827;
+      --text:#e8e0d0; --dim:#8a7f70;
+      --cyan:#00d4ff; --orange:#ff6b35; --green:#00c9a7; --purple:#b44dff;
+      --r:10px;
+    }
+    body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+    /* ── header ── */
+    header {
+      padding:1rem 2rem; display:flex; align-items:center; gap:1.5rem;
+      border-bottom:1px solid rgba(201,168,76,.15); background:var(--bgm);
+      position:sticky; top:0; z-index:10;
+    }
+    .back { color:var(--gold); text-decoration:none; font-size:.82rem; letter-spacing:.08em; transition:opacity .2s; }
+    .back:hover { opacity:.6; }
+    header h1 { font-family:'Playfair Display',serif; font-size:1.45rem; color:#fff; }
+    header h1 span { color:var(--gold); }
+    .subtitle { font-size:.78rem; color:var(--dim); margin-left:auto; letter-spacing:.06em; }
+
+    /* ── controls ── */
+    .controls {
+      padding:1rem 2rem; background:var(--bgm);
+      border-bottom:1px solid rgba(201,168,76,.1);
+      display:flex; flex-wrap:wrap; gap:.8rem; align-items:flex-end;
+    }
+    .cg { display:flex; flex-direction:column; gap:.3rem; }
+    .cg label { font-size:.68rem; letter-spacing:.14em; text-transform:uppercase; color:var(--dim); }
+    .cg input[type=text] {
+      background:var(--bgc); border:1px solid rgba(201,168,76,.2); color:var(--text);
+      padding:.45rem .8rem; border-radius:var(--r); font-size:.88rem; font-family:monospace;
+      width:280px; outline:none; transition:border-color .2s;
+    }
+    .cg input[type=text]:focus { border-color:var(--gold); }
+    .cg input[type=range] { width:110px; accent-color:var(--gold); cursor:pointer; }
+    .rv { font-size:.78rem; color:var(--gold); text-align:center; }
+    .btn {
+      background:transparent; border:1.5px solid var(--gold); color:var(--gold);
+      padding:.45rem 1.1rem; border-radius:50px; font-size:.78rem; font-weight:600;
+      letter-spacing:.1em; text-transform:uppercase; cursor:pointer;
+      transition:background .2s,color .2s; height:34px; align-self:flex-end; white-space:nowrap;
+    }
+    .btn:hover { background:var(--gold); color:var(--bg); }
+    .btn.primary { background:var(--gold); color:var(--bg); }
+    .btn.primary:hover { background:var(--gold-l); }
+    .btn:disabled { opacity:.35; cursor:default; pointer-events:none; }
+    .sound-lbl {
+      display:flex; align-items:center; gap:.4rem; font-size:.78rem; color:var(--dim);
+      cursor:pointer; align-self:flex-end; height:34px; padding:0 .3rem;
+    }
+    .sound-lbl input { accent-color:var(--gold); cursor:pointer; }
+
+    /* ── race ── */
+    .race {
+      display:grid; grid-template-columns:1fr 1fr; gap:1.2rem;
+      padding:1.2rem 2rem;
+    }
+
+    /* ── panel ── */
+    .panel {
+      background:var(--bgc); border:1px solid rgba(201,168,76,.12);
+      border-radius:var(--r); overflow:hidden; display:flex; flex-direction:column;
+      transition:border-color .3s, box-shadow .3s;
+    }
+    .panel.winner {
+      border-color:var(--gold);
+      box-shadow:0 0 32px rgba(201,168,76,.22);
+    }
+    .panel-head {
+      padding:.9rem 1.1rem; border-bottom:1px solid rgba(201,168,76,.1);
+      display:flex; align-items:center; gap:.9rem; flex-wrap:wrap;
+    }
+    .panel-head select {
+      background:var(--bgm); border:1px solid rgba(201,168,76,.25); color:var(--text);
+      padding:.35rem .7rem; border-radius:var(--r);
+      font-family:'Playfair Display',serif; font-size:.9rem; font-weight:700;
+      cursor:pointer; outline:none; transition:border-color .2s;
+    }
+    .panel-head select:focus { border-color:var(--gold); }
+    .stats { display:flex; gap:1.1rem; }
+    .stat { display:flex; flex-direction:column; align-items:center; }
+    .sv { font-size:1.05rem; font-weight:700; color:var(--gold); font-family:'Playfair Display',serif; }
+    .sl { font-size:.62rem; letter-spacing:.1em; text-transform:uppercase; color:var(--dim); }
+    .badge {
+      margin-left:auto; background:var(--gold); color:var(--bg);
+      font-size:.68rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+      padding:.2rem .7rem; border-radius:50px; display:none;
+    }
+    .panel.winner .badge { display:inline-block; }
+
+    /* ── bars ── */
+    .bars-wrap { padding:.6rem .6rem 0; flex:1; height:300px; }
+    .bars { display:flex; align-items:flex-end; gap:2px; width:100%; height:100%; }
+    .bar { flex:1; border-radius:2px 2px 0 0; background:var(--gold); min-width:1px; }
+    .bar.cmp { background:var(--cyan); }
+    .bar.swp { background:var(--orange); }
+    .bar.pvt { background:var(--purple); }
+    .bar.srt { background:var(--green); }
+
+    /* ── legend ── */
+    .legend {
+      display:flex; justify-content:center; gap:1.4rem; flex-wrap:wrap;
+      padding:.8rem 2rem 1.2rem;
+    }
+    .li { display:flex; align-items:center; gap:.4rem; font-size:.75rem; color:var(--dim); }
+    .ld { width:11px; height:11px; border-radius:2px; }
+
+    @media(max-width:700px){
+      .race { grid-template-columns:1fr; }
+      .controls { flex-direction:column; }
+      .cg input[type=text] { width:100%; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <a href="index.html" class="back">← Portfolio</a>
+  <h1>Sorting <span>Sounds</span> ♬</h1>
+  <span class="subtitle">Race two algorithms · Hear every comparison</span>
+</header>
+
+<div class="controls">
+  <div class="cg">
+    <label>Custom Array</label>
+    <input type="text" id="arrInput" placeholder="e.g. 42, 7, 99, 13, 55 — or leave blank for random" />
+  </div>
+  <div class="cg">
+    <label>Size</label>
+    <input type="range" id="sizeR" min="8" max="100" value="40" />
+    <div class="rv" id="sizeV">40</div>
+  </div>
+  <div class="cg">
+    <label>Speed</label>
+    <input type="range" id="speedR" min="1" max="10" value="5" />
+    <div class="rv" id="speedV">5</div>
+  </div>
+  <button class="btn" id="genBtn">⟳ New Array</button>
+  <button class="btn primary" id="startBtn">▶ Start Race</button>
+  <button class="btn" id="stopBtn" disabled>■ Stop</button>
+  <button class="btn" id="resetBtn">↺ Reset</button>
+  <label class="sound-lbl"><input type="checkbox" id="soundOn" checked /> Sound</label>
+</div>
+
+<div class="race">
+  <div class="panel" id="panelL">
+    <div class="panel-head">
+      <select id="algoL">
+        <option value="bubble">Bubble Sort</option>
+        <option value="quick" selected>Quick Sort</option>
+        <option value="merge">Merge Sort</option>
+        <option value="radix">Radix Sort</option>
+      </select>
+      <div class="stats">
+        <div class="stat"><span class="sv" id="cmpL">0</span><span class="sl">Compares</span></div>
+        <div class="stat"><span class="sv" id="swpL">0</span><span class="sl">Swaps</span></div>
+        <div class="stat"><span class="sv" id="tmL">—</span><span class="sl">Time</span></div>
+      </div>
+      <span class="badge">🏆 Winner</span>
+    </div>
+    <div class="bars-wrap"><div class="bars" id="barsL"></div></div>
+  </div>
+
+  <div class="panel" id="panelR">
+    <div class="panel-head">
+      <select id="algoR">
+        <option value="bubble">Bubble Sort</option>
+        <option value="quick">Quick Sort</option>
+        <option value="merge" selected>Merge Sort</option>
+        <option value="radix">Radix Sort</option>
+      </select>
+      <div class="stats">
+        <div class="stat"><span class="sv" id="cmpR">0</span><span class="sl">Compares</span></div>
+        <div class="stat"><span class="sv" id="swpR">0</span><span class="sl">Swaps</span></div>
+        <div class="stat"><span class="sv" id="tmR">—</span><span class="sl">Time</span></div>
+      </div>
+      <span class="badge">🏆 Winner</span>
+    </div>
+    <div class="bars-wrap"><div class="bars" id="barsR"></div></div>
+  </div>
+</div>
+
+<div class="legend">
+  <div class="li"><div class="ld" style="background:var(--gold)"></div>Unsorted</div>
+  <div class="li"><div class="ld" style="background:var(--cyan)"></div>Comparing</div>
+  <div class="li"><div class="ld" style="background:var(--orange)"></div>Swapping / Placing</div>
+  <div class="li"><div class="ld" style="background:var(--purple)"></div>Pivot</div>
+  <div class="li"><div class="ld" style="background:var(--green)"></div>Sorted</div>
+</div>
+
+<script>
+// ─── Audio ────────────────────────────────────────────────────────────────────
+let actx;
+function ctx() { return actx || (actx = new (window.AudioContext || window.webkitAudioContext)()); }
+
+function tone(val, max, isSwap) {
+  if (!document.getElementById('soundOn').checked) return;
+  try {
+    const c = ctx(), o = c.createOscillator(), g = c.createGain();
+    o.connect(g); g.connect(c.destination);
+    o.frequency.value = 150 + (val / max) * 950;
+    o.type = isSwap ? 'triangle' : 'sine';
+    g.gain.setValueAtTime(0.1, c.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.1);
+    o.start(); o.stop(c.currentTime + 0.1);
+  } catch(_) {}
+}
+
+// ─── Step generators ──────────────────────────────────────────────────────────
+// Step shape: { arr[], cmp[], swp[], pvt, srt:Set, done }
+
+function bubbleSteps(inp) {
+  const a=[...inp], n=a.length, S=[], srt=new Set();
+  for (let i=0;i<n-1;i++) {
+    for (let j=0;j<n-i-1;j++) {
+      S.push({arr:[...a],cmp:[j,j+1],swp:[],pvt:-1,srt:new Set(srt)});
+      if (a[j]>a[j+1]) {
+        [a[j],a[j+1]]=[a[j+1],a[j]];
+        S.push({arr:[...a],cmp:[],swp:[j,j+1],pvt:-1,srt:new Set(srt)});
+      }
+    }
+    srt.add(n-1-i);
+  }
+  srt.add(0);
+  S.push({arr:[...a],cmp:[],swp:[],pvt:-1,srt:new Set(srt),done:true});
+  return S;
+}
+
+function quickSteps(inp) {
+  const a=[...inp], n=a.length, S=[], srt=new Set();
+  function part(lo,hi) {
+    S.push({arr:[...a],cmp:[],swp:[],pvt:hi,srt:new Set(srt)});
+    let i=lo-1;
+    for (let j=lo;j<hi;j++) {
+      S.push({arr:[...a],cmp:[j,hi],swp:[],pvt:hi,srt:new Set(srt)});
+      if (a[j]<=a[hi]) {
+        i++;
+        if (i!==j) { [a[i],a[j]]=[a[j],a[i]]; S.push({arr:[...a],cmp:[],swp:[i,j],pvt:hi,srt:new Set(srt)}); }
+      }
+    }
+    [a[i+1],a[hi]]=[a[hi],a[i+1]]; srt.add(i+1);
+    S.push({arr:[...a],cmp:[],swp:[i+1,hi],pvt:-1,srt:new Set(srt)});
+    return i+1;
+  }
+  function qs(lo,hi) {
+    if (lo>=hi) { if(lo===hi) srt.add(lo); return; }
+    const pi=part(lo,hi); qs(lo,pi-1); qs(pi+1,hi);
+  }
+  qs(0,n-1);
+  for(let i=0;i<n;i++) srt.add(i);
+  S.push({arr:[...a],cmp:[],swp:[],pvt:-1,srt:new Set(srt),done:true});
+  return S;
+}
+
+function mergeSteps(inp) {
+  const a=[...inp], n=a.length, S=[], srt=new Set();
+  function mrg(lo,mid,hi) {
+    const L=a.slice(lo,mid+1), R=a.slice(mid+1,hi+1);
+    let i=0,j=0,k=lo;
+    while(i<L.length&&j<R.length){
+      S.push({arr:[...a],cmp:[lo+i,mid+1+j],swp:[],pvt:-1,srt:new Set(srt)});
+      a[k++]=L[i]<=R[j]?L[i++]:R[j++];
+      S.push({arr:[...a],cmp:[],swp:[k-1],pvt:-1,srt:new Set(srt)});
+    }
+    while(i<L.length){a[k]=L[i++];S.push({arr:[...a],cmp:[],swp:[k++],pvt:-1,srt:new Set(srt)});}
+    while(j<R.length){a[k]=R[j++];S.push({arr:[...a],cmp:[],swp:[k++],pvt:-1,srt:new Set(srt)});}
+  }
+  function ms(lo,hi){ if(lo>=hi)return; const m=(lo+hi)>>1; ms(lo,m);ms(m+1,hi);mrg(lo,m,hi); }
+  ms(0,n-1);
+  for(let i=0;i<n;i++) srt.add(i);
+  S.push({arr:[...a],cmp:[],swp:[],pvt:-1,srt:new Set(srt),done:true});
+  return S;
+}
+
+function radixSteps(inp) {
+  const a=[...inp], n=a.length, S=[];
+  const maxV=Math.max(...a);
+  function csort(exp) {
+    const out=new Array(n), cnt=new Array(10).fill(0);
+    for(let i=0;i<n;i++){ cnt[Math.floor(a[i]/exp)%10]++; S.push({arr:[...a],cmp:[i],swp:[],pvt:-1,srt:new Set()}); }
+    for(let i=1;i<10;i++) cnt[i]+=cnt[i-1];
+    for(let i=n-1;i>=0;i--){ out[--cnt[Math.floor(a[i]/exp)%10]]=a[i]; }
+    for(let i=0;i<n;i++){ a[i]=out[i]; S.push({arr:[...a],cmp:[],swp:[i],pvt:-1,srt:new Set()}); }
+  }
+  for(let exp=1;Math.floor(maxV/exp)>0;exp*=10) csort(exp);
+  const all=new Set([...Array(n).keys()]);
+  S.push({arr:[...a],cmp:[],swp:[],pvt:-1,srt:all,done:true});
+  return S;
+}
+
+const ALGOS = { bubble:bubbleSteps, quick:quickSteps, merge:mergeSteps, radix:radixSteps };
+const DELAYS = [280,160,90,50,28,16,9,5,3,1]; // speed 1–10
+
+// ─── State ────────────────────────────────────────────────────────────────────
+let curArr=[], panels={}, raceStart=0, doneCount=0;
+
+function delay() { return DELAYS[(+document.getElementById('speedR').value)-1]; }
+
+// ─── Bars ─────────────────────────────────────────────────────────────────────
+function buildBars(el, arr) {
+  el.innerHTML='';
+  const mx=Math.max(...arr);
+  arr.forEach(v=>{
+    const b=document.createElement('div');
+    b.className='bar';
+    b.style.height=(v/mx*100)+'%';
+    el.appendChild(b);
+  });
+}
+
+function drawStep(el, step) {
+  const {arr,cmp,swp,pvt,srt,done}=step;
+  const mx=Math.max(...arr);
+  [...el.children].forEach((b,i)=>{
+    b.style.height=(arr[i]/mx*100)+'%';
+    if(done||srt.has(i))      b.className='bar srt';
+    else if(swp.includes(i))  b.className='bar swp';
+    else if(i===pvt)          b.className='bar pvt';
+    else if(cmp.includes(i))  b.className='bar cmp';
+    else                      b.className='bar';
+  });
+}
+
+// ─── Panel tick ───────────────────────────────────────────────────────────────
+function tick(p) {
+  if(p.idx>=p.steps.length) return;
+  const step=p.steps[p.idx++];
+  drawStep(p.barsEl, step);
+
+  const mx=Math.max(...step.arr);
+  if(step.cmp.length){ p.cmps++; tone(step.arr[step.cmp[0]],mx,false); }
+  if(step.swp.length){ p.swps++; tone(step.arr[step.swp[0]],mx,true);  }
+  document.getElementById('cmp'+p.id).textContent=p.cmps;
+  document.getElementById('swp'+p.id).textContent=p.swps;
+  document.getElementById('tm'+p.id).textContent=(Date.now()-raceStart)+'ms';
+
+  if(step.done){
+    p.done=true; doneCount++;
+    if(doneCount===1) p.panelEl.classList.add('winner');
+    if(doneCount>=2){ document.getElementById('startBtn').disabled=false; document.getElementById('stopBtn').disabled=true; }
+    return;
+  }
+  p.timer=setTimeout(()=>tick(p), delay());
+}
+
+// ─── Array helpers ────────────────────────────────────────────────────────────
+function randArr(n){ return Array.from({length:n},()=>Math.ceil(Math.random()*99)); }
+
+function parseArr(str) {
+  const vals=str.split(/[\s,]+/).map(Number).filter(v=>Number.isFinite(v)&&v>0&&Number.isInteger(v));
+  return vals.length>=2 ? vals.slice(0,100) : null;
+}
+
+function loadArr() {
+  const custom=parseArr(document.getElementById('arrInput').value);
+  curArr=custom||randArr(+document.getElementById('sizeR').value);
+}
+
+// ─── UI helpers ───────────────────────────────────────────────────────────────
+function stopAll(){ Object.values(panels).forEach(p=>clearTimeout(p.timer)); }
+
+function resetUI(){
+  ['L','R'].forEach(s=>{
+    document.getElementById('cmp'+s).textContent='0';
+    document.getElementById('swp'+s).textContent='0';
+    document.getElementById('tm'+s).textContent='—';
+    document.getElementById('panel'+s).classList.remove('winner');
+  });
+}
+
+function preview(){
+  loadArr();
+  buildBars(document.getElementById('barsL'), curArr);
+  buildBars(document.getElementById('barsR'), curArr);
+  resetUI();
+}
+
+// ─── Buttons ──────────────────────────────────────────────────────────────────
+document.getElementById('genBtn').addEventListener('click',()=>{
+  document.getElementById('arrInput').value='';
+  stopAll(); preview();
+  document.getElementById('startBtn').disabled=false;
+  document.getElementById('stopBtn').disabled=true;
+});
+
+document.getElementById('sizeR').addEventListener('input',e=>{
+  document.getElementById('sizeV').textContent=e.target.value;
+  if(!document.getElementById('arrInput').value){ stopAll(); preview(); }
+});
+
+document.getElementById('speedR').addEventListener('input',e=>{
+  document.getElementById('speedV').textContent=e.target.value;
+});
+
+document.getElementById('startBtn').addEventListener('click',()=>{
+  stopAll(); ctx(); // unlock audio on gesture
+  loadArr(); resetUI(); doneCount=0;
+
+  const mkPanel=(id)=>({
+    id, idx:0, cmps:0, swps:0, done:false, timer:null,
+    barsEl: document.getElementById('bars'+id),
+    panelEl: document.getElementById('panel'+id),
+    steps: ALGOS[document.getElementById('algo'+id).value]([...curArr]),
+  });
+
+  panels={L:mkPanel('L'), R:mkPanel('R')};
+  buildBars(panels.L.barsEl, curArr);
+  buildBars(panels.R.barsEl, curArr);
+
+  raceStart=Date.now();
+  document.getElementById('startBtn').disabled=true;
+  document.getElementById('stopBtn').disabled=false;
+  tick(panels.L); tick(panels.R);
+});
+
+document.getElementById('stopBtn').addEventListener('click',()=>{
+  stopAll();
+  document.getElementById('startBtn').disabled=false;
+  document.getElementById('stopBtn').disabled=true;
+});
+
+document.getElementById('resetBtn').addEventListener('click',()=>{
+  stopAll(); preview();
+  document.getElementById('startBtn').disabled=false;
+  document.getElementById('stopBtn').disabled=true;
+});
+
+// Init
+preview();
+</script>
+</body>
+</html>
