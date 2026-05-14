@@ -321,7 +321,11 @@ function searchArtist() {
       });
     })
     .catch(function () {
-      searchGrid.innerHTML = '<p style="color:rgb(138,127,112);text-align:center;">Search failed — check your connection.</p>';
+      searchGrid.innerHTML =
+        '<p style="color:rgb(138,127,112);text-align:center;">' +
+        'Search blocked by your network. ' +
+        '<a href="https://music.apple.com/search?term=' + encodeURIComponent(term) + '" target="_blank" style="color:rgb(231,203,40);">Search on Apple Music ↗</a>' +
+        '</p>';
     })
     .finally(function () {
       searchBtn.textContent = 'Search';
