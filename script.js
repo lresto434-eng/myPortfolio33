@@ -312,6 +312,11 @@ function searchArtist() {
     .then(function (data) {
       searchGrid.innerHTML = '';
 
+      if (data.error) {
+        searchGrid.innerHTML = '<p style="color:rgb(138,127,112);text-align:center;">API error: ' + data.error.message + '</p>';
+        return;
+      }
+
       if (!data.items || data.items.length === 0) {
         searchGrid.innerHTML = '<p style="color:rgb(138,127,112);text-align:center;">No results found.</p>';
         return;
