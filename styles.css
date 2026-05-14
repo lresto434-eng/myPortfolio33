@@ -319,19 +319,35 @@ footer a {
 }
 
   /* ── Responsive ── */                                                                          
-  @media (max-width: 768px) {                               
+  @media (max-width: 768px) {
+    /* Keep logo and hamburger side-by-side */
     nav {
-      flex-direction: column;
-      align-items: center;                                                                        
-      gap: 0.4rem;
-      padding: 0.75rem 1rem;                                                                      
-    }                                                       
-
-    nav ul {
+      flex-direction: row;
+      align-items: center;
+      padding: 0.75rem 1rem;
       flex-wrap: wrap;
-      justify-content: center;                                                                    
-      gap: 0.75rem;
-    }                                                                                             
+    }
+
+    /* Show the hamburger button */
+    .hamburger {
+      display: block;
+    }
+
+    /* Hide links by default; nav.nav-open reveals them */
+    nav ul {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      width: 100%;
+      padding: 0.75rem 0;
+      border-top: 1px solid rgba(231, 203, 40, 0.2);
+    }
+
+    nav.nav-open ul {
+      display: flex;
+    }
+
                                                             
     #hero {
       padding: 9em 1.5em 3em;
@@ -350,6 +366,71 @@ footer a {
       max-width: 340px;                                     
     }
   }
+
+/* ── Typewriter cursor ── */
+/* The | character blinks using a CSS animation. step-end makes it switch
+   instantly (on/off) rather than smoothly fading, which looks like a real cursor. */
+.typewriter-cursor {
+  display: inline;
+  color: rgb(231, 203, 40);
+  font-weight: 300;
+  animation: blink 0.75s step-end infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+/* ── Hamburger button ── */
+/* Hidden on desktop; script.js toggles nav.nav-open to show/hide the ul */
+.hamburger {
+  display: none;
+  background: none;
+  border: 1.5px solid goldenrod;
+  color: goldenrod;
+  font-size: 1.25rem;
+  border-radius: 6px;
+  padding: 0.25rem 0.6rem;
+  cursor: pointer;
+}
+
+/* ── Active nav link (set by script.js) ── */
+nav ul a.active {
+  color: rgb(231, 203, 40);
+  border-bottom: 1.5px solid rgb(231, 203, 40);
+}
+
+/* ── Scroll fade-in ── */
+/* .js-loaded is added to <body> by script.js, so this only activates when
+   JS is running — visitors without JS will still see all content normally */
+.js-loaded .fade-in {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.js-loaded .fade-in.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Contact form success message ── */
+.form-success {
+  text-align: center;
+  color: rgb(231, 203, 40);
+  font-size: 1.1rem;
+  padding: 2rem;
+  border: 1.5px solid rgb(231, 203, 40);
+  border-radius: 12px;
+}
+
+.form-error {
+  text-align: center;
+  color: tomato;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
 
   @media (max-width: 480px) {
     nav ul {

@@ -10,8 +10,9 @@
                                                                                                   
     <!--Navigation-->                                       
 
-    <nav>                                                                                         
+    <nav>
       <a href="#hero" class="logo"> &lt;/&gt; Angel Resto </a>
+      <button class="hamburger" aria-label="Toggle menu">&#9776;</button>
       <ul>                                                                                        
         <li><a href="#about">About</a></li>                 
         <li><a href="#skills">Skills</a></li>                                                     
@@ -32,7 +33,7 @@
     </section>                                              
                                                                                                   
   <!--About-->                                                                                    
-  <div class="section-wrap" id="about">
+  <div class="section-wrap fade-in" id="about">
     <div class="inner">                                                                           
       <span class="sectionlabel">Movement II</span>         
       <h2 class="sectiontitle">About Me</h2>
@@ -60,7 +61,7 @@
   </div>                                                                                          
                                                             
   <!--Skills-->
-  <div class="section-wrap" id="skills">
+  <div class="section-wrap fade-in" id="skills">
     <div class="inner">                                                                           
       <span class="sectionlabel">Movement III</span>
       <h2 class="sectiontitle">My Toolkit</h2>                                                    
@@ -94,7 +95,7 @@
     </div>
   </div>                                                                                          
   
-  <div class="section-wrap alt" id="projects">                                                    
+  <div class="section-wrap alt fade-in" id="projects">                                                    
     <div class="inner">                                     
       <span class="sectionlabel">Movement IV</span>
       <h2 class="sectiontitle">My Compositions</h2>
@@ -115,16 +116,16 @@
   </div>
                                                                                                   
   <!-- ═══ CONTACT ═══ -->                                  
-    <div class="section-wrap alt" id="contact">
+    <div class="section-wrap alt fade-in" id="contact">
       <div class="inner">
         <span class="sectionlabel">Finale</span>
         <h2 class="sectiontitle">Let's Connect</h2>                                               
         <div class="gold-rule"></div>
-        <form class="contact-form">                                                               
-          <input type="text"  placeholder="Your Name"    required />                              
-          <input type="email" placeholder="Your Email"   required />
-          <textarea          placeholder="Your Message" required></textarea>                      
-          <button type="submit">Send Message</button>       
+        <form class="contact-form">
+          <input type="text"  name="name"    placeholder="Your Name"    required />
+          <input type="email" name="email"   placeholder="Your Email"   required />
+          <textarea           name="message" placeholder="Your Message" required></textarea>
+          <button type="submit">Send Message</button>
         </form>                                                                                   
       </div>
     </div>                                                                                        
@@ -136,5 +137,6 @@
         <a href="mailto:angelresto25@icloud.com">angelresto25@icloud.com</a>                      
       </p>                                                                                        
     </footer>                                                                                     
-  </body>                                                                                         
+    <script src="script.js"></script>
+  </body>
   </html>                     
