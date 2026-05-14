@@ -3,7 +3,8 @@
   <head>                                                                                          
     <meta charset="UTF-8">                                  
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="styles.css" rel="stylesheet">                                                     
+    <link href="styles.css" rel="stylesheet">
+    <script src="https://www.youtube.com/iframe_api"></script>                                                     
     <title> Angel | Full-Stack Developer</title>
   </head>                                                                                         
   <body>                                                    
@@ -123,12 +124,29 @@
       <span class="sectionlabel">Interlude</span>
       <h2 class="sectiontitle">What I'm Listening To</h2>
       <div class="gold-rule"></div>
+
+      <!-- Featured tracks — click to load into YouTube player -->
+      <div class="music-featured-grid"></div>
+
+      <!-- YouTube IFrame Player -->
+      <div class="yt-player-wrap">
+        <div id="yt-player"></div>
+      </div>
+      <p class="yt-now-playing" id="yt-now-playing">♪ King of Kings — Hillsong Worship</p>
+
+      <!-- iTunes API search -->
+      <div class="music-search-divider">
+        <span>Discover via iTunes API</span>
+      </div>
       <div class="music-search">
         <input type="text" id="music-input" placeholder="Search any artist…" />
         <button id="music-search-btn">Search</button>
       </div>
-      <p class="music-api-note">Powered by the <a href="https://developer.apple.com/library/archive/documentation/AudioVideo/Conceptual/iTuneSearchAPI" target="_blank">iTunes Search API</a></p>
-      <div class="music-grid"></div>
+      <p class="music-api-note">
+        Featured tracks via <strong>YouTube IFrame API</strong> &nbsp;·&nbsp;
+        Search via <strong>iTunes Search API</strong>
+      </p>
+      <div class="music-search-grid"></div>
     </div>
   </div>
 
