@@ -303,6 +303,29 @@ textarea::placeholder {
     background: rgb(248, 225, 95);
 }
 
+/* ── Social links (contact section) ── */
+.social-links {
+  display: flex;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+.social-btn {
+  border: 1.5px solid rgb(231, 203, 40);
+  color: rgb(231, 203, 40);
+  padding: 0.6em 1.8em;
+  border-radius: 50px;
+  text-decoration: none;
+  font-size: 0.9rem;
+  letter-spacing: 0.05em;
+  transition: background 0.25s, color 0.25s;
+}
+
+.social-btn:hover {
+  background: rgb(231, 203, 40);
+  color: #1a1040;
+}
+
 /* ── Footer ── */
 footer {
     background: #0d0c2a;
