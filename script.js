@@ -177,58 +177,77 @@ fadeElements.forEach(function (el) {
 // Promise.all fires ALL the fetch calls at the same time and waits for every
 // one to finish — much faster than fetching them one after another.
 
-async function loadMusicSection() {
-  const grid = document.querySelector('.music-grid');
-  grid.innerHTML = '<p style="color: rgb(138,127,112); text-align: center;">Loading tracks…</p>';
-
-  const searches = [
-    { term: 'king of kings hillsong worship', limit: 1 },
-    { term: 'metallica',                      limit: 4 },
-    { term: 'stevie ray vaughan',             limit: 4 },
-    { term: 'pink floyd',                     limit: 4 }
+function loadMusicSection() {
+  // Track data fetched from iTunes API and hardcoded for reliability across all devices
+  const tracks = [
+    {
+      name: 'King of Kings',
+      artist: 'Hillsong Worship & Brooke Ligertwood',
+      art: 'https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/3f/1a/22/3f1a22c8-b48a-ae68-f1f6-ac8066d24702/9320428341303.png/300x300bb.jpg',
+      preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/b2/4e/9f/b24e9fa2-a071-d813-ff74-4e9d7472bd59/mzaf_6282635809404644004.plus.aac.p.m4a'
+    },
+    {
+      name: 'One',
+      artist: 'Metallica',
+      art: 'https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/b5/f3/83/b5f38312-5b95-9a09-fcb9-5622dd5ea077/858978005820.png/300x300bb.jpg',
+      preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/15/70/4f/15704fc6-5323-f790-10cd-bb8a162e8bf4/mzaf_18179605505662845535.plus.aac.p.m4a'
+    },
+    {
+      name: 'Master of Puppets',
+      artist: 'Metallica',
+      art: 'https://is1-ssl.mzstatic.com/image/thumb/Music114/v4/b8/5a/82/b85a8259-60d9-bfaa-770a-2baac8380e87/858978005196.png/300x300bb.jpg',
+      preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/da/e7/9c/dae79c08-a960-2d21-8eab-42e9d70e29e6/mzaf_7135498142102205621.plus.aac.p.m4a'
+    },
+    {
+      name: 'Enter Sandman',
+      artist: 'Metallica',
+      art: 'https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/2e/94/95/2e9495d7-dfe3-ddc8-87ef-6ef797a60218/850007452056.png/300x300bb.jpg',
+      preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/85/a5/65/85a565a5-c992-0a77-a1be-c4b190c7f395/mzaf_12174803259665081383.plus.aac.p.m4a'
+    },
+    {
+      name: 'Pride and Joy',
+      artist: 'Stevie Ray Vaughan',
+      art: 'https://is1-ssl.mzstatic.com/image/thumb/Features125/v4/4c/30/3b/4c303b15-31ec-2f95-5beb-370471968188/dj.fbyalctw.jpg/300x300bb.jpg',
+      preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview116/v4/77/be/cb/77becb7e-f631-a667-32a5-5bf4ffca8f25/mzaf_17145952464433995820.plus.aac.p.m4a'
+    },
+    {
+      name: 'Texas Flood',
+      artist: 'Stevie Ray Vaughan',
+      art: 'https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/34/da/84/34da8426-f27a-9a82-de08-e94083b7d2eb/23CRGIM36500.rgb.jpg/300x300bb.jpg',
+      preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/4c/f2/ca/4cf2ca9b-009c-aa2a-0a86-08c6df7576c6/mzaf_1059658685779354335.plus.aac.p.m4a'
+    },
+    {
+      name: 'Wish You Were Here',
+      artist: 'Pink Floyd',
+      art: 'https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/aa/e0/ab/aae0ab6a-d906-a189-81bf-70b56aa43f7a/886445635843.jpg/300x300bb.jpg',
+      preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/5e/4b/35/5e4b3554-282d-12dd-e420-728287a1d3b1/mzaf_14938061551507100947.plus.aac.p.m4a'
+    },
+    {
+      name: 'Comfortably Numb',
+      artist: 'Pink Floyd',
+      art: 'https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/3e/17/ec/3e17ec6d-f980-c64f-19e0-a6fd8bbf0c10/886445635850.jpg/300x300bb.jpg',
+      preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/fe/44/11/fe441140-ff52-28ef-d7c4-d87b3084d959/mzaf_9494577035851753023.plus.aac.p.m4a'
+    },
+    {
+      name: 'Time',
+      artist: 'Pink Floyd',
+      art: 'https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/3e/76/b0/3e76b0e3-762b-2286-a019-8afb19cee541/886445635829.jpg/300x300bb.jpg',
+      preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/da/8b/ed/da8bed67-d37d-eb79-d045-ab9b2770d945/mzaf_17679948615611584950.plus.aac.p.m4a'
+    }
   ];
 
-  // Promise.allSettled — unlike Promise.all, this never fails completely.
-  // Each request gets its own result: { status: 'fulfilled', value: ... }
-  // or { status: 'rejected', reason: ... }. We use whatever succeeded.
-  const results = await Promise.allSettled(
-    searches.map(function (s) {
-      return fetch('https://itunes.apple.com/search?term=' + encodeURIComponent(s.term) + '&media=music&limit=' + s.limit, {
-        headers: { 'Accept': 'application/json' }
-      }).then(function (r) { return r.json(); });
-    })
-  );
-
-  const tracks = [];
-  results.forEach(function (result, index) {
-    if (result.status !== 'fulfilled') return;
-    const filtered = result.value.results.filter(function (t) { return t.previewUrl; });
-    // King of Kings goes first
-    if (index === 0) {
-      tracks.unshift(...filtered.slice(0, 1));
-    } else {
-      tracks.push(...filtered.slice(0, 3));
-    }
-  });
-
-  grid.innerHTML = '';
-
-  if (tracks.length === 0) {
-    grid.innerHTML = '<p style="color: rgb(138,127,112); text-align: center;">Could not load tracks right now.</p>';
-    return;
-  }
+  const grid = document.querySelector('.music-grid');
 
   tracks.forEach(function (track) {
-    const artwork = track.artworkUrl100.replace('100x100', '300x300');
     const card = document.createElement('div');
     card.classList.add('music-card');
     card.innerHTML =
-      '<img src="' + artwork + '" alt="' + track.trackName + '" class="music-art" />' +
+      '<img src="' + track.art + '" alt="' + track.name + '" class="music-art" />' +
       '<div class="music-info">' +
-        '<p class="music-track">' + track.trackName + '</p>' +
-        '<p class="music-artist">' + track.artistName + '</p>' +
+        '<p class="music-track">' + track.name + '</p>' +
+        '<p class="music-artist">' + track.artist + '</p>' +
       '</div>' +
-      '<button class="music-play" data-preview="' + track.previewUrl + '" aria-label="Play">&#9654;</button>';
+      '<button class="music-play" data-preview="' + track.preview + '" aria-label="Play">&#9654;</button>';
     grid.appendChild(card);
   });
 
