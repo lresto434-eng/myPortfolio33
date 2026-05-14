@@ -250,11 +250,12 @@ span a {
 
 /* ── Project card button ── */
 .card-btn {
-  display: inline-block;
-  margin-top: 1rem;
+  display: block;
+  width: fit-content;
+  margin: 1rem auto 0;
   border: 1.5px solid rgb(231, 203, 40);
   color: rgb(231, 203, 40);
-  padding: 0.5em 1.4em;
+  padding: 0.6em 1.8em;
   border-radius: 50px;
   text-decoration: none;
   font-size: 0.85rem;
