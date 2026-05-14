@@ -265,7 +265,7 @@ loadMusicSection();
 //   maxResults=9  — how many to return
 //   key=API_KEY   — your credential
 
-var YT_API_KEY = 'AIzaSyDhCG33EUGLzJpFC9EwokUKCcjexGbvLE';
+var YT_API_KEY = 'AIzaSyDhCG33EUGLzJpFC9EwoKUKCcijexGbvLE';
 
 var searchGrid  = document.querySelector('.music-search-grid');
 var searchBtn   = document.querySelector('#music-search-btn');
