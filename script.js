@@ -178,6 +178,9 @@ fadeElements.forEach(function (el) {
 // one to finish — much faster than fetching them one after another.
 
 async function loadMusicSection() {
+  const grid = document.querySelector('.music-grid');
+  grid.innerHTML = '<p style="color: rgb(138,127,112); text-align: center;">Loading tracks…</p>';
+
   const searches = [
     { term: 'king of kings hillsong worship', limit: 1 },
     { term: 'metallica',                      limit: 4 },
@@ -185,83 +188,78 @@ async function loadMusicSection() {
     { term: 'pink floyd',                     limit: 4 }
   ];
 
-  try {
-    // Fire all four API calls at the same time
-    const responses = await Promise.all(
-      searches.map(function (s) {
-        return fetch('https://itunes.apple.com/search?term=' + encodeURIComponent(s.term) + '&media=music&limit=' + s.limit)
-          .then(function (r) { return r.json(); });
-      })
-    );
+  // Promise.allSettled — unlike Promise.all, this never fails completely.
+  // Each request gets its own result: { status: 'fulfilled', value: ... }
+  // or { status: 'rejected', reason: ... }. We use whatever succeeded.
+  const results = await Promise.allSettled(
+    searches.map(function (s) {
+      return fetch('https://itunes.apple.com/search?term=' + encodeURIComponent(s.term) + '&media=music&limit=' + s.limit, {
+        headers: { 'Accept': 'application/json' }
+      }).then(function (r) { return r.json(); });
+    })
+  );
 
-    // Destructure the four results and filter out any tracks without a preview
-    const [hillsong, metallica, srv, floyd] = responses.map(function (r) {
-      return r.results.filter(function (t) { return t.previewUrl; });
-    });
+  const tracks = [];
+  results.forEach(function (result, index) {
+    if (result.status !== 'fulfilled') return;
+    const filtered = result.value.results.filter(function (t) { return t.previewUrl; });
+    // King of Kings goes first
+    if (index === 0) {
+      tracks.unshift(...filtered.slice(0, 1));
+    } else {
+      tracks.push(...filtered.slice(0, 3));
+    }
+  });
 
-    // King of Kings first, then 3 from each other artist
-    const tracks = [
-      ...hillsong.slice(0, 1),
-      ...metallica.slice(0, 3),
-      ...srv.slice(0, 3),
-      ...floyd.slice(0, 3)
-    ];
+  grid.innerHTML = '';
 
-    const grid = document.querySelector('.music-grid');
-
-    tracks.forEach(function (track) {
-      // iTunes gives 100x100 artwork — swap to 300x300 for better quality
-      const artwork = track.artworkUrl100.replace('100x100', '300x300');
-
-      const card = document.createElement('div');
-      card.classList.add('music-card');
-      card.innerHTML =
-        '<img src="' + artwork + '" alt="' + track.trackName + '" class="music-art" />' +
-        '<div class="music-info">' +
-          '<p class="music-track">' + track.trackName + '</p>' +
-          '<p class="music-artist">' + track.artistName + '</p>' +
-        '</div>' +
-        '<button class="music-play" data-preview="' + track.previewUrl + '" aria-label="Play">&#9654;</button>';
-
-      grid.appendChild(card);
-    });
-
-    // Single shared Audio object — only one track plays at a time
-    const audio = new Audio();
-    let activeBtn = null;
-
-    grid.addEventListener('click', function (e) {
-      const btn = e.target.closest('.music-play');
-      if (!btn) return;
-
-      // Clicking the current track pauses it
-      if (btn === activeBtn && !audio.paused) {
-        audio.pause();
-        btn.innerHTML = '&#9654;';
-        return;
-      }
-
-      // Stop whatever was playing before
-      if (activeBtn) {
-        audio.pause();
-        activeBtn.innerHTML = '&#9654;';
-      }
-
-      audio.src = btn.dataset.preview;
-      audio.play();
-      btn.innerHTML = '&#9646;&#9646;';
-      activeBtn = btn;
-
-      audio.onended = function () {
-        btn.innerHTML = '&#9654;';
-        activeBtn = null;
-      };
-    });
-
-  } catch (err) {
-    document.querySelector('.music-grid').innerHTML =
-      '<p style="color: rgb(138,127,112); text-align: center;">Could not load tracks right now.</p>';
+  if (tracks.length === 0) {
+    grid.innerHTML = '<p style="color: rgb(138,127,112); text-align: center;">Could not load tracks right now.</p>';
+    return;
   }
+
+  tracks.forEach(function (track) {
+    const artwork = track.artworkUrl100.replace('100x100', '300x300');
+    const card = document.createElement('div');
+    card.classList.add('music-card');
+    card.innerHTML =
+      '<img src="' + artwork + '" alt="' + track.trackName + '" class="music-art" />' +
+      '<div class="music-info">' +
+        '<p class="music-track">' + track.trackName + '</p>' +
+        '<p class="music-artist">' + track.artistName + '</p>' +
+      '</div>' +
+      '<button class="music-play" data-preview="' + track.previewUrl + '" aria-label="Play">&#9654;</button>';
+    grid.appendChild(card);
+  });
+
+  const audio = new Audio();
+  let activeBtn = null;
+
+  grid.addEventListener('click', function (e) {
+    const btn = e.target.closest('.music-play');
+    if (!btn) return;
+
+    if (btn === activeBtn && !audio.paused) {
+      audio.pause();
+      btn.innerHTML = '&#9654;';
+      return;
+    }
+
+    if (activeBtn) {
+      audio.pause();
+      activeBtn.innerHTML = '&#9654;';
+    }
+
+    audio.src = btn.dataset.preview;
+    audio.play();
+    btn.innerHTML = '&#9646;&#9646;';
+    activeBtn = btn;
+
+    audio.onended = function () {
+      btn.innerHTML = '&#9654;';
+      activeBtn = null;
+    };
+  });
 }
 
 loadMusicSection();
