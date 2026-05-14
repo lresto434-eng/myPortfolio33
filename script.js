@@ -253,38 +253,42 @@ function loadMusicSection() {
 loadMusicSection();
 
 
-// ─── iTunes Search API ────────────────────────────────────────────────────────
-// Searches iTunes for any artist and renders cards with 30-second previews.
-// This is a live API call — every search hits https://itunes.apple.com/search
+// ─── YouTube Search API ───────────────────────────────────────────────────────
+// Uses the YouTube Data API v3 to search for videos.
+// Each search result card loads that video into the main YouTube player.
+//
+// API endpoint: https://www.googleapis.com/youtube/v3/search
+// Parameters:
+//   part=snippet  — return title, channel, thumbnail
+//   type=video    — only return videos (not playlists/channels)
+//   q=QUERY       — search term
+//   maxResults=9  — how many to return
+//   key=API_KEY   — your credential
 
-var searchAudio     = new Audio();
-var searchActiveBtn = null;
+var YT_API_KEY = 'AIzaSyDhCG33EUGLzJpFC9EwokUKCcjexGbvLE';
 
 var searchGrid  = document.querySelector('.music-search-grid');
 var searchBtn   = document.querySelector('#music-search-btn');
 var searchInput = document.querySelector('#music-input');
 
+// Clicking a search result card loads it into the YouTube player
 searchGrid.addEventListener('click', function (e) {
-  var btn = e.target.closest('.music-play');
-  if (!btn) return;
+  var card = e.target.closest('.music-card');
+  if (!card || !card.dataset.ytid) return;
 
-  if (btn === searchActiveBtn && !searchAudio.paused) {
-    searchAudio.pause();
-    btn.innerHTML = '&#9654;';
-    return;
+  document.querySelectorAll('.music-featured-grid .music-card').forEach(function (c) {
+    c.classList.remove('active');
+  });
+  document.querySelectorAll('.music-search-grid .music-card').forEach(function (c) {
+    c.classList.remove('active');
+  });
+  card.classList.add('active');
+
+  if (ytPlayer && ytPlayer.loadVideoById) {
+    ytPlayer.loadVideoById(card.dataset.ytid);
+    document.getElementById('yt-now-playing').textContent = '♪ ' + card.dataset.title;
+    document.querySelector('.yt-player-wrap').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
-  if (searchActiveBtn) {
-    searchAudio.pause();
-    searchActiveBtn.innerHTML = '&#9654;';
-  }
-  searchAudio.src = btn.dataset.preview;
-  searchAudio.play();
-  btn.innerHTML = '&#9646;&#9646;';
-  searchActiveBtn = btn;
-  searchAudio.onended = function () {
-    btn.innerHTML = '&#9654;';
-    searchActiveBtn = null;
-  };
 });
 
 function searchArtist() {
@@ -295,37 +299,50 @@ function searchArtist() {
   searchBtn.disabled    = true;
   searchGrid.innerHTML  = '<p style="color:rgb(138,127,112);text-align:center;">Loading…</p>';
 
-  // Live fetch to iTunes Search API
-  fetch('https://itunes.apple.com/search?term=' + encodeURIComponent(term) + '&media=music&limit=9')
+  // YouTube Data API v3 search request
+  fetch(
+    'https://www.googleapis.com/youtube/v3/search' +
+    '?part=snippet' +
+    '&type=video' +
+    '&maxResults=9' +
+    '&q=' + encodeURIComponent(term) +
+    '&key=' + YT_API_KEY
+  )
     .then(function (r) { return r.json(); })
     .then(function (data) {
       searchGrid.innerHTML = '';
-      var results = data.results.filter(function (t) { return t.previewUrl; }).slice(0, 9);
 
-      if (results.length === 0) {
+      if (!data.items || data.items.length === 0) {
         searchGrid.innerHTML = '<p style="color:rgb(138,127,112);text-align:center;">No results found.</p>';
         return;
       }
 
-      results.forEach(function (t) {
+      data.items.forEach(function (item) {
+        var videoId   = item.id.videoId;
+        var title     = item.snippet.title;
+        var channel   = item.snippet.channelTitle;
+        var thumbnail = item.snippet.thumbnails.high
+                      ? item.snippet.thumbnails.high.url
+                      : item.snippet.thumbnails.default.url;
+
         var card = document.createElement('div');
         card.classList.add('music-card');
+        card.dataset.ytid  = videoId;
+        card.dataset.title = title;
+        card.style.cursor  = 'pointer';
+
         card.innerHTML =
-          '<img src="' + t.artworkUrl100.replace('100x100', '300x300') + '" alt="' + t.trackName + '" class="music-art" />' +
+          '<img src="' + thumbnail + '" alt="' + title + '" class="music-art" />' +
           '<div class="music-info">' +
-            '<p class="music-track">' + t.trackName + '</p>' +
-            '<p class="music-artist">' + t.artistName + '</p>' +
-          '</div>' +
-          '<button class="music-play" data-preview="' + t.previewUrl + '" aria-label="Play">&#9654;</button>';
+            '<p class="music-track">' + title + '</p>' +
+            '<p class="music-artist">' + channel + '</p>' +
+          '</div>';
+
         searchGrid.appendChild(card);
       });
     })
     .catch(function () {
-      searchGrid.innerHTML =
-        '<p style="color:rgb(138,127,112);text-align:center;">' +
-        'Search blocked by your network. ' +
-        '<a href="https://music.apple.com/search?term=' + encodeURIComponent(term) + '" target="_blank" style="color:rgb(231,203,40);">Search on Apple Music ↗</a>' +
-        '</p>';
+      searchGrid.innerHTML = '<p style="color:rgb(138,127,112);text-align:center;">Search failed — check your connection.</p>';
     })
     .finally(function () {
       searchBtn.textContent = 'Search';
