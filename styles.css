@@ -248,6 +248,24 @@ span a {
     color: rgb(231, 203, 40);
 }
 
+/* ── Project card button ── */
+.card-btn {
+  display: inline-block;
+  margin-top: 1rem;
+  border: 1.5px solid rgb(231, 203, 40);
+  color: rgb(231, 203, 40);
+  padding: 0.5em 1.4em;
+  border-radius: 50px;
+  text-decoration: none;
+  font-size: 0.85rem;
+  transition: background 0.25s, color 0.25s;
+}
+
+.card-btn:hover {
+  background: rgb(231, 203, 40);
+  color: #1a1040;
+}
+
 /* ── Contact ── */
 .contact-form {
     display: flex;
