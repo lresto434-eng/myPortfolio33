@@ -248,6 +248,70 @@ span a {
     color: rgb(231, 203, 40);
 }
 
+/* ── Music Section ── */
+.music-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 1.2rem;
+}
+
+.music-card {
+  background: linear-gradient(45deg, darkslateblue, darkslategray);
+  border: 1.5px solid rgb(99, 97, 88);
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: border-color 0.25s;
+}
+
+.music-card:hover {
+  border-color: rgb(231, 203, 40);
+}
+
+.music-art {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  display: block;
+}
+
+.music-info {
+  padding: 0.75rem;
+  flex: 1;
+}
+
+.music-track {
+  color: white;
+  font-size: 0.85rem;
+  margin: 0 0 0.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.music-artist {
+  color: rgb(138, 127, 112);
+  font-size: 0.75rem;
+  margin: 0;
+}
+
+.music-play {
+  width: 100%;
+  background: none;
+  border: none;
+  border-top: 1px solid rgba(231, 203, 40, 0.2);
+  color: rgb(231, 203, 40);
+  font-size: 1rem;
+  padding: 0.6rem;
+  cursor: pointer;
+  transition: background 0.25s;
+}
+
+.music-play:hover {
+  background: rgba(231, 203, 40, 0.1);
+}
+
 /* ── Project card button ── */
 .card-btn {
   display: block;

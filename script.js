@@ -120,7 +120,7 @@ document.querySelectorAll('nav ul a').forEach(function (link) {
 //   1. Remove "active" from all nav links
 //   2. Add "active" only to the link that matches the visible section's id
 
-const sections = document.querySelectorAll('#hero, #about, #skills, #projects, #contact');
+const sections = document.querySelectorAll('#hero, #about, #skills, #projects, #music, #contact');
 const navLinks = document.querySelectorAll('nav ul a');
 
 const activeObserver = new IntersectionObserver(function (entries) {
@@ -169,7 +169,105 @@ fadeElements.forEach(function (el) {
 });
 
 
-// ─── 5. Contact form — send to Formspree via fetch ───────────────────────────
+// ─── 5. Music Section — iTunes API ───────────────────────────────────────────
+// fetch() sends a request to a URL and returns a Promise.
+// async/await is a cleaner way to write .then() chains — instead of chaining
+// .then() after .then(), you just write "await" and the code reads top to bottom.
+//
+// Promise.all fires ALL the fetch calls at the same time and waits for every
+// one to finish — much faster than fetching them one after another.
+
+async function loadMusicSection() {
+  const searches = [
+    { term: 'king of kings hillsong worship', limit: 1 },
+    { term: 'metallica',                      limit: 4 },
+    { term: 'stevie ray vaughan',             limit: 4 },
+    { term: 'pink floyd',                     limit: 4 }
+  ];
+
+  try {
+    // Fire all four API calls at the same time
+    const responses = await Promise.all(
+      searches.map(function (s) {
+        return fetch('https://itunes.apple.com/search?term=' + encodeURIComponent(s.term) + '&media=music&limit=' + s.limit)
+          .then(function (r) { return r.json(); });
+      })
+    );
+
+    // Destructure the four results and filter out any tracks without a preview
+    const [hillsong, metallica, srv, floyd] = responses.map(function (r) {
+      return r.results.filter(function (t) { return t.previewUrl; });
+    });
+
+    // King of Kings first, then 3 from each other artist
+    const tracks = [
+      ...hillsong.slice(0, 1),
+      ...metallica.slice(0, 3),
+      ...srv.slice(0, 3),
+      ...floyd.slice(0, 3)
+    ];
+
+    const grid = document.querySelector('.music-grid');
+
+    tracks.forEach(function (track) {
+      // iTunes gives 100x100 artwork — swap to 300x300 for better quality
+      const artwork = track.artworkUrl100.replace('100x100', '300x300');
+
+      const card = document.createElement('div');
+      card.classList.add('music-card');
+      card.innerHTML =
+        '<img src="' + artwork + '" alt="' + track.trackName + '" class="music-art" />' +
+        '<div class="music-info">' +
+          '<p class="music-track">' + track.trackName + '</p>' +
+          '<p class="music-artist">' + track.artistName + '</p>' +
+        '</div>' +
+        '<button class="music-play" data-preview="' + track.previewUrl + '" aria-label="Play">&#9654;</button>';
+
+      grid.appendChild(card);
+    });
+
+    // Single shared Audio object — only one track plays at a time
+    const audio = new Audio();
+    let activeBtn = null;
+
+    grid.addEventListener('click', function (e) {
+      const btn = e.target.closest('.music-play');
+      if (!btn) return;
+
+      // Clicking the current track pauses it
+      if (btn === activeBtn && !audio.paused) {
+        audio.pause();
+        btn.innerHTML = '&#9654;';
+        return;
+      }
+
+      // Stop whatever was playing before
+      if (activeBtn) {
+        audio.pause();
+        activeBtn.innerHTML = '&#9654;';
+      }
+
+      audio.src = btn.dataset.preview;
+      audio.play();
+      btn.innerHTML = '&#9646;&#9646;';
+      activeBtn = btn;
+
+      audio.onended = function () {
+        btn.innerHTML = '&#9654;';
+        activeBtn = null;
+      };
+    });
+
+  } catch (err) {
+    document.querySelector('.music-grid').innerHTML =
+      '<p style="color: rgb(138,127,112); text-align: center;">Could not load tracks right now.</p>';
+  }
+}
+
+loadMusicSection();
+
+
+// ─── 6. Contact form — send to Formspree via fetch ───────────────────────────
 // fetch() sends data to a URL in the background without navigating away.
 // new FormData(form) automatically packages up all the named inputs.
 // .then() runs when the server responds; .catch() runs if the network fails.
