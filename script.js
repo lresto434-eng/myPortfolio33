@@ -283,6 +283,97 @@ function loadMusicSection() {
 
 loadMusicSection();
 
+// Live search — hits the iTunes API in real time when the user types an artist
+function renderTracks(tracks, grid) {
+  grid.innerHTML = '';
+  if (tracks.length === 0) {
+    grid.innerHTML = '<p style="color: rgb(138,127,112); text-align: center;">No results found.</p>';
+    return;
+  }
+  tracks.forEach(function (track) {
+    const card = document.createElement('div');
+    card.classList.add('music-card');
+    card.innerHTML =
+      '<img src="' + track.art + '" alt="' + track.name + '" class="music-art" />' +
+      '<div class="music-info">' +
+        '<p class="music-track">' + track.name + '</p>' +
+        '<p class="music-artist">' + track.artist + '</p>' +
+      '</div>' +
+      '<button class="music-play" data-preview="' + track.preview + '" aria-label="Play">&#9654;</button>';
+    grid.appendChild(card);
+  });
+}
+
+const searchBtn   = document.querySelector('#music-search-btn');
+const searchInput = document.querySelector('#music-input');
+const musicGrid   = document.querySelector('.music-grid');
+const musicAudio  = new Audio();
+let   musicActiveBtn = null;
+
+// Shared click handler for dynamically rendered cards
+musicGrid.addEventListener('click', function (e) {
+  const btn = e.target.closest('.music-play');
+  if (!btn) return;
+
+  if (btn === musicActiveBtn && !musicAudio.paused) {
+    musicAudio.pause();
+    btn.innerHTML = '&#9654;';
+    return;
+  }
+  if (musicActiveBtn) {
+    musicAudio.pause();
+    musicActiveBtn.innerHTML = '&#9654;';
+  }
+  musicAudio.src = btn.dataset.preview;
+  musicAudio.play();
+  btn.innerHTML = '&#9646;&#9646;';
+  musicActiveBtn = btn;
+  musicAudio.onended = function () {
+    btn.innerHTML = '&#9654;';
+    musicActiveBtn = null;
+  };
+});
+
+function searchArtist() {
+  const term = searchInput.value.trim();
+  if (!term) return;
+
+  searchBtn.textContent = 'Searching…';
+  searchBtn.disabled = true;
+  musicGrid.innerHTML = '<p style="color: rgb(138,127,112); text-align: center;">Loading…</p>';
+
+  fetch('https://itunes.apple.com/search?term=' + encodeURIComponent(term) + '&media=music&limit=9')
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      const results = data.results
+        .filter(function (t) { return t.previewUrl; })
+        .slice(0, 9)
+        .map(function (t) {
+          return {
+            name:    t.trackName,
+            artist:  t.artistName,
+            art:     t.artworkUrl100.replace('100x100', '300x300'),
+            preview: t.previewUrl
+          };
+        });
+      renderTracks(results, musicGrid);
+    })
+    .catch(function () {
+      musicGrid.innerHTML = '<p style="color: rgb(138,127,112); text-align: center;">Search failed — check your connection.</p>';
+    })
+    .finally(function () {
+      searchBtn.textContent = 'Search';
+      searchBtn.disabled = false;
+    });
+}
+
+searchBtn.addEventListener('click', searchArtist);
+
+// Also trigger search when user hits Enter
+searchInput.addEventListener('keydown', function (e) {
+  if (e.key === 'Enter') searchArtist();
+});
+
 
 // ─── 6. Contact form — send to Formspree via fetch ───────────────────────────
 // fetch() sends data to a URL in the background without navigating away.
