@@ -185,7 +185,7 @@ form.addEventListener('submit', function (e) {
   button.textContent = 'Sending…';
   button.disabled = true;
 
-  fetch('https://formspree.io/f/YOUR_FORM_ID', {
+  fetch('https://formspree.io/f/xjglqgln', {
     method: 'POST',
     body: new FormData(form),
     headers: { 'Accept': 'application/json' }
