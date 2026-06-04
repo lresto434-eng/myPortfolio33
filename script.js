@@ -361,6 +361,99 @@ searchInput.addEventListener('keydown', function (e) {
 });
 
 
+// ─── 7. Floating symbols canvas ───────────────────────────────────────────────
+// A fixed <canvas> sits behind all page content (z-index 0, pointer-events none).
+// 25 symbols (code + music) drift slowly around the viewport.
+// When the cursor gets within 150px of a symbol, that symbol nudges toward it.
+
+(function () {
+  var canvas  = document.getElementById('float-canvas');
+  var ctx     = canvas.getContext('2d');
+  var mouse   = { x: -999, y: -999 };
+  var symbols = [];
+
+  var codeSet  = ['</>', '{}', '()', '=>', '#', '[]', '&&', ';;'];
+  var musicSet = ['♩', '♪', '♫', '♬'];
+
+  function resize() {
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+
+  function randomBetween(a, b) {
+    return a + Math.random() * (b - a);
+  }
+
+  function createSymbol(i) {
+    var isMusic = i % 5 === 0; // roughly 1 in 5 are music notes
+    var pool    = isMusic ? musicSet : codeSet;
+    return {
+      text:    pool[Math.floor(Math.random() * pool.length)],
+      x:       randomBetween(0, window.innerWidth),
+      y:       randomBetween(0, window.innerHeight),
+      vx:      randomBetween(-0.25, 0.25),
+      vy:      randomBetween(-0.25, 0.25),
+      size:    randomBetween(14, 28),
+      opacity: randomBetween(0.07, 0.16),
+      isMusic: isMusic
+    };
+  }
+
+  function init() {
+    resize();
+    symbols = [];
+    for (var i = 0; i < 25; i++) {
+      symbols.push(createSymbol(i));
+    }
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    symbols.forEach(function (s) {
+      // Cursor attraction within 150px
+      var dx   = mouse.x - s.x;
+      var dy   = mouse.y - s.y;
+      var dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 150 && dist > 0) {
+        s.x += (dx / dist) * 0.4;
+        s.y += (dy / dist) * 0.4;
+      }
+
+      // Normal drift
+      s.x += s.vx;
+      s.y += s.vy;
+
+      // Wrap around edges
+      if (s.x < -40)                  s.x = canvas.width  + 20;
+      if (s.x > canvas.width  + 40)   s.x = -20;
+      if (s.y < -40)                  s.y = canvas.height + 20;
+      if (s.y > canvas.height + 40)   s.y = -20;
+
+      // Draw — gold tint for music notes, muted purple-white for code
+      ctx.save();
+      ctx.globalAlpha = s.opacity;
+      ctx.font        = s.size + 'px Georgia, serif';
+      ctx.fillStyle   = s.isMusic ? 'rgb(231, 203, 40)' : '#c8b8f0';
+      ctx.fillText(s.text, s.x, s.y);
+      ctx.restore();
+    });
+
+    requestAnimationFrame(draw);
+  }
+
+  window.addEventListener('mousemove', function (e) {
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+  });
+
+  window.addEventListener('resize', resize);
+
+  init();
+  draw();
+})();
+
+
 // ─── 6. Contact form — send to Formspree via fetch ───────────────────────────
 // fetch() sends data to a URL in the background without navigating away.
 // new FormData(form) automatically packages up all the named inputs.
